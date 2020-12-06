@@ -10,3 +10,6 @@ type TttController struct{}
 func (*TttController) Get(c *gin.Context) {
 	services.TttService.DoSmth()
 }
+func (*TttController) Post(c *gin.Context) {
+	services.TttService.DoSmth()
+}
