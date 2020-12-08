@@ -8,4 +8,6 @@ func init() {
 	TttService = TttServiceType{}
 }
 
-func (*TttServiceType) DoSmth() {}
+func (*TttServiceType) DoSmth() string {
+	return "Hello World!"
+}
