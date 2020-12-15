@@ -1,0 +1,1136 @@
+openapi: 3.0.1
+info:
+  title: TTT5 API
+  description: This API sevres for semestral work of implementing "piškvorky" for
+    PIA subject.
+  contact:
+    email: vrbalu00@students.zcu.cz
+  license:
+    name: MIT license
+    url: https://opensource.org/licenses/MIT
+  version: 1.0.0
+servers:
+- url: localhost:8080/api
+tags:
+- name: users
+  description: Handling users events
+- name: friendships
+  description: Handling friendship events
+- name: sessions
+  description: Handling of log in and log out
+- name: games
+  description: Operations during game
+- name: chats
+  description: Chat operations
+paths:
+  /users:
+    get:
+      tags:
+      - users
+      summary: Get all availible users
+      operationId: getAllUsers
+      parameters:
+      - name: online
+        in: query
+        description: Status of the user
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: A lsit of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+                x-content-type: application/json
+        "400":
+          description: Invalid input values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "404":
+          description: No users availible
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+    post:
+      tags:
+      - users
+      summary: Create a user
+      description: Creates a user after successful posting of registration form.
+      operationId: createUser
+      requestBody:
+        description: Created user object
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Registration'
+        required: true
+      responses:
+        "201":
+          description: User created
+        "400":
+          description: Invalid input values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+  /users/{username}:
+    get:
+      tags:
+      - users
+      summary: Get user by user name
+      operationId: getUserByName
+      parameters:
+      - name: username
+        in: path
+        description: The username that needs to be fetched.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "404":
+          description: User not found
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+    delete:
+      tags:
+      - users
+      summary: Delete user
+      description: This can only be done by the logged in user.
+      operationId: deleteUser
+      parameters:
+      - name: username
+        in: path
+        description: The name that needs to be deleted
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: User deleted.
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "404":
+          description: User not found.
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+    patch:
+      tags:
+      - users
+      summary: Update part of user info
+      description: Updates user details.
+      operationId: updateUser
+      parameters:
+      - name: username
+        in: path
+        description: username of user that needs to be updated
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: Updated user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePassword'
+        required: true
+      responses:
+        "200":
+          description: Successful operation.
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "404":
+          description: User not found.
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+  /friendships:
+    get:
+      tags:
+      - friendships
+      summary: Get all friendships
+      operationId: getAllFriendships
+      parameters:
+      - name: user
+        in: query
+        description: Friends of given username
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: friend
+        in: query
+        description: Users' friend username
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: isPending
+        in: query
+        description: If friendship has pending status
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A list of friendships
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Friendship'
+                x-content-type: application/json
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "404":
+          description: No friendships available.
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+    post:
+      tags:
+      - friendships
+      summary: Create a friendship
+      description: Create a friendship relation between two users.
+      operationId: createFriendship
+      requestBody:
+        description: Created friendship
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FriendshipCreate'
+        required: true
+      responses:
+        "201":
+          description: Friendship created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdResponse'
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+  /friendships/{id}:
+    get:
+      tags:
+      - friendships
+      summary: Get friendship by id
+      operationId: getFriendship
+      parameters:
+      - name: id
+        in: path
+        description: Friendship that needs to be fetched.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: isPending
+        in: query
+        description: If friendship has pending status
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Friendship'
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "404":
+          description: Friendship not found.
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+    delete:
+      tags:
+      - friendships
+      summary: Delete friendship
+      description: Permanently delete a friendship between two users.
+      operationId: deleteFriendship
+      parameters:
+      - name: id
+        in: path
+        description: The id of a friendship to be deleted
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Successfully deleted
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "404":
+          description: Friendship not found.
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+    patch:
+      tags:
+      - friendships
+      summary: Update friendship status
+      description: Only field that can be updated is status.
+      operationId: updateFriendship
+      parameters:
+      - name: id
+        in: path
+        description: friendship id to be updated
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: Update status of friendship
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusUpdate'
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "404":
+          description: Friendship not found.
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+  /sessions:
+    post:
+      tags:
+      - sessions
+      summary: Log in
+      description: Authentication credentials to be verified against DB
+      operationId: createSession
+      requestBody:
+        description: Authentication crenetails
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Registration'
+        required: true
+      responses:
+        "201":
+          description: Session established
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+  /sessions/{id}:
+    delete:
+      tags:
+      - sessions
+      summary: Log out
+      operationId: deleteSession
+      parameters:
+      - name: id
+        in: path
+        description: The id of a friendship to be deleted
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: User logged out
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "404":
+          description: Session not found.
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+  /games:
+    get:
+      tags:
+      - games
+      summary: Get all availible games
+      operationId: getAllGames
+      parameters:
+      - name: player_x
+        in: query
+        description: Player playing X
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: player_o
+        in: query
+        description: Player playing O
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: isPending
+        in: query
+        description: If the game has pending status
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: isFinished
+        in: query
+        description: If the game has finished
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: A list of games
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameSimple'
+                x-content-type: application/json
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "404":
+          description: No games available.
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+    post:
+      tags:
+      - games
+      summary: Create a game
+      description: Creates game with one user, that will be waiting for other player
+        to join. Player can select its shape.
+      operationId: createGame
+      requestBody:
+        description: Created game object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGame'
+        required: true
+      responses:
+        "201":
+          description: Game created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdResponse'
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+  /games/{id}:
+    get:
+      tags:
+      - games
+      summary: Get one game
+      operationId: getOneGame
+      parameters:
+      - name: id
+        in: path
+        description: Id of the game
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: player_x
+        in: query
+        description: Player playing X
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: player_o
+        in: query
+        description: Player playing O
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: isPending
+        in: query
+        description: If the game has pending status
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: isFinished
+        in: query
+        description: If the game has finished
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: A list of games
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "404":
+          description: No games available.
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+    delete:
+      tags:
+      - games
+      summary: Delete game
+      description: Delete a game
+      operationId: deleteGame
+      parameters:
+      - name: id
+        in: path
+        description: The id of a game to be deleted
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Game deleted.
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "404":
+          description: Game not found.
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+    patch:
+      tags:
+      - games
+      summary: Update a game status.
+      description: Udate a status of a game.
+      operationId: updateGame
+      parameters:
+      - name: id
+        in: path
+        description: Game id that needs to be updated
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: Update status of friendship
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameUpdate'
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "404":
+          description: Game not found.
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+  /games/{id}/players:
+    get:
+      tags:
+      - games
+      summary: Get game players by their user name
+      operationId: getGamePlayers
+      parameters:
+      - name: id
+        in: path
+        description: Id of a game where players are playing
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+                x-content-type: application/json
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "404":
+          description: Game not found.
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+  /games/{id}/players/{username}:
+    get:
+      tags:
+      - games
+      summary: Get info about a player in the game
+      operationId: getGamePlayerInfo
+      parameters:
+      - name: id
+        in: path
+        description: Id of a game
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: username
+        in: path
+        description: Username of player in a game
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "404":
+          description: Game not found.
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+  /games/{id}/players/{username}/{coordinates}:
+    post:
+      tags:
+      - games
+      summary: Make a move
+      description: Move made by a player in the game
+      operationId: playMove
+      parameters:
+      - name: id
+        in: path
+        description: Id of the game
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: username
+        in: path
+        description: Username of a player
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: coordinates
+        in: path
+        description: Played coordinates by a player
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: Created user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlayedMove'
+        required: true
+      responses:
+        "201":
+          description: Move played
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+  /chats:
+    post:
+      tags:
+      - chats
+      summary: Create a chat instance
+      description: Create a chat object for chatting.
+      operationId: createChat
+      responses:
+        "201":
+          description: Game created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdResponse'
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+  /chats/{id}/message:
+    get:
+      tags:
+      - chats
+      summary: Get chat messages by chat id
+      operationId: getMessages
+      parameters:
+      - name: id
+        in: path
+        description: Id of a chat
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+                x-content-type: application/json
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+    post:
+      tags:
+      - chats
+      summary: Post a message into chat
+      description: Send message to a chat
+      operationId: sendMessage
+      parameters:
+      - name: id
+        in: path
+        description: Chat Id a message should be sent to
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: Message to be sent
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+        required: true
+      responses:
+        "201":
+          description: Message sent
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+        "500":
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrResponse'
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        online:
+          type: boolean
+      example:
+        online: true
+        email: email
+        username: username
+    Registration:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    UpdatePassword:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    Friendship:
+      type: object
+      properties:
+        id:
+          type: string
+        user1:
+          type: string
+        user2:
+          type: string
+        isPending:
+          type: boolean
+        timestamp:
+          type: string
+          format: date-time
+      example:
+        user1: user1
+        user2: user2
+        id: id
+        isPending: true
+        timestamp: 2000-01-23T04:56:07.000+00:00
+    FriendshipCreate:
+      type: object
+      properties:
+        user1:
+          type: string
+        user2:
+          type: string
+    IdResponse:
+      type: object
+      properties:
+        id:
+          type: string
+      example:
+        id: id
+    StatusUpdate:
+      type: object
+      properties:
+        isPending:
+          type: boolean
+    GameSimple:
+      type: object
+      properties:
+        id:
+          type: string
+        user_x:
+          type: string
+        user_o:
+          type: string
+        isPending:
+          type: boolean
+        isFinished:
+          type: boolean
+      example:
+        user_o: user_o
+        id: id
+        isPending: true
+        isFinished: true
+        user_x: user_x
+    Game:
+      type: object
+      properties:
+        id:
+          type: string
+        user_x:
+          type: string
+        user_o:
+          type: string
+        isPending:
+          type: boolean
+        isFinished:
+          type: boolean
+        gameplay_x:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coordinates'
+        gameplay_o:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coordinates'
+      example:
+        user_o: user_o
+        gameplay_x:
+        - coor_x: coor_x
+          coor_y: coor_y
+        - coor_x: coor_x
+          coor_y: coor_y
+        gameplay_o:
+        - null
+        - null
+        id: id
+        isPending: true
+        isFinished: true
+        user_x: user_x
+    GameUpdate:
+      type: object
+      properties:
+        isPending:
+          type: boolean
+        isFinished:
+          type: boolean
+        gameplay_x:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coordinates'
+        gameplay_o:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coordinates'
+    Coordinates:
+      properties:
+        coor_x:
+          type: string
+        coor_y:
+          type: string
+      example:
+        coor_x: coor_x
+        coor_y: coor_y
+    CreateGame:
+      type: object
+      properties:
+        username:
+          type: string
+        shape:
+          type: string
+          enum:
+          - x
+          - o
+    PlayedMove:
+      type: object
+      properties:
+        username:
+          type: string
+        shape:
+          type: string
+          enum:
+          - x
+          - o
+        coor:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coordinates'
+    Message:
+      type: object
+      properties:
+        username:
+          type: string
+        message:
+          type: string
+      example:
+        message: message
+        username: username
+    ApiErrResponse:
+      type: object
+      properties:
+        message:
+          type: string
+  securitySchemes:
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: http://petstore.swagger.io/oauth/dialog
+          scopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
