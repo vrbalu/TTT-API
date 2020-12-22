@@ -14,8 +14,8 @@ func SetupRouter() *gin.Engine {
 	// CORS setup
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,
-		AllowMethods:     []string{"GET", "POST"},
-		AllowHeaders:     []string{"Origin", "Authorization"},
+		AllowMethods:     []string{"GET", "POST", "OPTIONS", "PUT", "PATCH"},
+		AllowHeaders:     []string{"Origin", "Authorization", "content-type"},
 		AllowCredentials: false,
 		MaxAge:           72 * time.Hour,
 	}))
@@ -26,6 +26,8 @@ func SetupRouter() *gin.Engine {
 		tttController := controllers.TttController{}
 
 		apiGroup.GET("/ttt", tttController.Get)
+		apiGroup.POST("/callback", HandleCallback)
+
 	}
 	return router
 }
