@@ -18,6 +18,6 @@ LABEL maintainer="vrbalu00@students.zcu.cz"
 
 COPY --from=builder /build /app/
 ENV GIN_MODE=release
-ENV LOG_LEVEL=ERROR
+ENV LOG_LEVEL=DEBUG
 
 ENTRYPOINT ["app/api"]

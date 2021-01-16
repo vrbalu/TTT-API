@@ -1,9 +1,12 @@
 package main
 
-import "TTT/mod/helpers"
+import (
+	"TTT/mod/controllers"
+	"TTT/mod/helpers"
+)
 
 func main() {
-	r := helpers.SetupRouter()
+	r := controllers.SetupRouter()
 	err := r.Run()
 	if err != nil {
 		helpers.Log.Error(err)

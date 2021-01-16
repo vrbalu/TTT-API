@@ -1,7 +1,7 @@
-package helpers
+package controllers
 
 import (
-	"TTT/mod/controllers"
+	"TTT/mod/helpers"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/toorop/gin-logrus"
@@ -10,7 +10,7 @@ import (
 
 func SetupRouter() *gin.Engine {
 	router := gin.New()
-	router.Use(ginlogrus.Logger(Log), gin.Recovery()) //Setup logging and panic recovery
+	router.Use(ginlogrus.Logger(helpers.Log), gin.Recovery()) //Setup logging and panic recovery
 	// CORS setup
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,
@@ -23,10 +23,14 @@ func SetupRouter() *gin.Engine {
 	// API routes
 	apiGroup := router.Group("/api")
 	{
-		tttController := controllers.TttController{}
-
+		tttController := TttController{}
+		userController := UsersController{}
+		sessionsController := SessionsController{}
 		apiGroup.GET("/ttt", tttController.Get)
-		apiGroup.POST("/callback", HandleCallback)
+		apiGroup.POST("/users", userController.CreateUser)
+		apiGroup.POST("/ttt", tttController.Post)
+		apiGroup.POST("/callback", userController.CreateUserWithGoogle)
+		apiGroup.POST("/sessions", sessionsController.CreateSession)
 
 	}
 	return router
