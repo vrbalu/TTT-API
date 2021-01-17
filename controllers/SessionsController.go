@@ -22,6 +22,11 @@ func (*SessionsController) CreateSession(c *gin.Context) {
 	if !authorized {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, "Wrong e-mail or password")
 	}
+	err = services.UserService.UpdateStatus(auth.Email, true)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error updating")
+		return
+	}
 	user := services.UserService.GetUserByEmail(auth.Email)
 	c.JSON(200, gin.H{
 		"username": &user.Username,

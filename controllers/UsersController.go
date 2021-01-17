@@ -6,6 +6,7 @@ import (
 	"TTT/mod/services"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 )
 
@@ -46,7 +47,7 @@ func (*UsersController) CreateUserWithGoogle(c *gin.Context) {
 		Email:    gtrm.UserData.Email,
 		ExtID:    gtrm.UserData.ID,
 		IDToken:  gtrm.UserData.IDToken,
-		Online:   false,
+		Online:   true,
 	}
 	_, existsUser := userService.CheckUserExists(user.Email)
 	if !existsUser {
@@ -64,6 +65,11 @@ func (*UsersController) CreateUserWithGoogle(c *gin.Context) {
 	if !valid {
 		c.JSON(http.StatusUnauthorized,"Unauthorized. Token not valid.")
 	}*/
+	err = services.UserService.UpdateStatus(user.Email, true)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error updating")
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"username": user.Username,
 		"email":    user.Email,
@@ -76,7 +82,22 @@ func (*UsersController) DeleteUser(c *gin.Context) {
 }
 
 func (*UsersController) GetAllUsers(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
+	online := c.Query("online")
+	if online != "" {
+		users, err := services.UserService.GetAllUsers(true)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, "Error updating")
+			return
+		}
+		c.JSON(http.StatusOK, users)
+	} else {
+		users, err := services.UserService.GetAllUsers(false)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, "Error updating")
+			return
+		}
+		c.JSON(http.StatusOK, users)
+	}
 }
 
 func (*UsersController) GetUserByName(c *gin.Context) {
@@ -84,5 +105,43 @@ func (*UsersController) GetUserByName(c *gin.Context) {
 }
 
 func (*UsersController) UpdateUser(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
+	email := c.Query("email")
+	operationType := c.Query("type")
+	log.Print(email)
+	log.Print(operationType)
+	if operationType == "status" {
+		var status *models.UpdateStatus
+		err := c.BindJSON(&status)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, "Error getting body")
+			return
+		}
+		log.Print(status.Online)
+		err = userService.UpdateStatus(email, status.Online)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+			return
+		}
+		c.JSON(http.StatusOK, "")
+
+	}
+	if operationType == "password" {
+		var password *models.UpdatePassword
+		err := c.BindJSON(&password)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, "Error getting body")
+			return
+		}
+		password.Password, err = helpers.HashPassword(password.Password)
+		if err != nil {
+			c.AbortWithStatusJSON(500, "Internal server error.")
+		}
+		err = userService.UpdatePassword(email, password.Password)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, "Error inserting into DB")
+			return
+		}
+		c.JSON(http.StatusOK, "")
+
+	}
 }

@@ -26,11 +26,15 @@ func SetupRouter() *gin.Engine {
 		tttController := TttController{}
 		userController := UsersController{}
 		sessionsController := SessionsController{}
-		apiGroup.GET("/ttt", tttController.Get)
+		apiGroup.GET("/users", userController.GetAllUsers)
 		apiGroup.POST("/users", userController.CreateUser)
+		apiGroup.PUT("/users", userController.UpdateUser)
+
+		apiGroup.POST("/sessions", sessionsController.CreateSession)
+
+		apiGroup.GET("/ttt", tttController.Get)
 		apiGroup.POST("/ttt", tttController.Post)
 		apiGroup.POST("/callback", userController.CreateUserWithGoogle)
-		apiGroup.POST("/sessions", sessionsController.CreateSession)
 
 	}
 	return router

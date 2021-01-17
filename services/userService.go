@@ -101,3 +101,54 @@ func (*UserServiceType) GetUserByEmail(email string) *models.User {
 	}
 	return &user
 }
+func (*UserServiceType) UpdateStatus(email string, updatedValue bool) error {
+	query := fmt.Sprintf("UPDATE %s SET Online = %v WHERE Email = '%s'", table, updatedValue, email)
+	log.Print("Updating status")
+	_, err := DbService.Exec(query)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (*UserServiceType) UpdatePassword(email string, updatedValue string) error {
+	query := fmt.Sprintf("UPDATE %s SET Password = '%s' WHERE Email = '%s'", table, updatedValue, email)
+	_, err := DbService.Exec(query)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (*UserServiceType) GetAllUsers(onlyOnline bool) ([]models.SimpleUser, error) {
+	var activeUsers []models.SimpleUser
+	var query string
+	if onlyOnline {
+		query = fmt.Sprintf("SELECT Username,Email,Online FROM %s WHERE Online = true", table)
+	} else {
+		query = fmt.Sprintf("SELECT Username,Email,Online FROM %s", table)
+	}
+	rows, err := DbService.Query(query)
+	if err == sql.ErrNoRows {
+		return nil, err
+	}
+	if err != nil {
+		log.Print(err)
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var user models.SimpleUser
+		err = rows.Scan(&user.Username, &user.Email, &user.Online)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		activeUsers = append(activeUsers, user)
+	}
+	if err := rows.Err(); err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return activeUsers, nil
+}
