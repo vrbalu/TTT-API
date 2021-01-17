@@ -123,9 +123,9 @@ func (*UserServiceType) GetAllUsers(onlyOnline bool) ([]models.SimpleUser, error
 	var activeUsers []models.SimpleUser
 	var query string
 	if onlyOnline {
-		query = fmt.Sprintf("SELECT Username,Email,Online FROM %s WHERE Online = true", table)
+		query = fmt.Sprintf("SELECT Username,Email,IDToken,Online FROM %s WHERE Online = true", table)
 	} else {
-		query = fmt.Sprintf("SELECT Username,Email,Online FROM %s", table)
+		query = fmt.Sprintf("SELECT Username,Email,IDToken, Online FROM %s", table)
 	}
 	rows, err := DbService.Query(query)
 	if err == sql.ErrNoRows {
@@ -138,7 +138,7 @@ func (*UserServiceType) GetAllUsers(onlyOnline bool) ([]models.SimpleUser, error
 	defer rows.Close()
 	for rows.Next() {
 		var user models.SimpleUser
-		err = rows.Scan(&user.Username, &user.Email, &user.Online)
+		err = rows.Scan(&user.Username, &user.Email, &user.IdToken, &user.Online)
 		if err != nil {
 			log.Println(err)
 			return nil, err

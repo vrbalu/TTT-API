@@ -26,11 +26,18 @@ func SetupRouter() *gin.Engine {
 		tttController := TttController{}
 		userController := UsersController{}
 		sessionsController := SessionsController{}
+		friendshipsController := FriendshipsController{}
 		apiGroup.GET("/users", userController.GetAllUsers)
 		apiGroup.POST("/users", userController.CreateUser)
 		apiGroup.PUT("/users", userController.UpdateUser)
 
 		apiGroup.POST("/sessions", sessionsController.CreateSession)
+
+		apiGroup.GET("/friendships", friendshipsController.GetFriendships)
+		apiGroup.POST("/friendships", friendshipsController.CreateFriendship)
+		apiGroup.PUT("/friendships", friendshipsController.UpdateFriendship)
+		apiGroup.DELETE("/friendships", friendshipsController.DeleteFriendship)
+		apiGroup.GET("/friendships/:id", friendshipsController.GetFriendshipById)
 
 		apiGroup.GET("/ttt", tttController.Get)
 		apiGroup.POST("/ttt", tttController.Post)

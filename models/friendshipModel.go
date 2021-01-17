@@ -1,9 +1,5 @@
 package models
 
-import (
-	"time"
-)
-
 type Friendship struct {
 	Id string `json:"id,omitempty"`
 
@@ -12,6 +8,4 @@ type Friendship struct {
 	User2 string `json:"user2,omitempty"`
 
 	IsPending bool `json:"isPending,omitempty"`
-
-	Timestamp time.Time `json:"timestamp,omitempty"`
 }

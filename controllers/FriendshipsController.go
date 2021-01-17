@@ -1,28 +1,73 @@
 package controllers
 
 import (
+	"TTT/mod/models"
+	"TTT/mod/services"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 type FriendshipsController struct{}
 
 func (*FriendshipsController) CreateFriendship(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
+	var newFriendship models.FriendshipCreate
+	err := c.BindJSON(&newFriendship)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error parsing body")
+		return
+	}
+	err = services.FriendshipService.CreateFriendship(&newFriendship)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error creating friendship"+err.Error())
+		return
+	}
+	c.JSON(http.StatusCreated, "")
 }
 
 func (*FriendshipsController) DeleteFriendship(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
+	id := c.Query("id")
+	err := services.FriendshipService.DeleteFriendship(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error deleting friendship"+err.Error())
+		return
+	}
+	c.JSON(http.StatusNoContent, "")
 }
 
-func (*FriendshipsController) GetAllFriendships(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
+func (*FriendshipsController) GetFriendshipById(c *gin.Context) {
+	id := c.Param("id")
+	res, err := services.FriendshipService.GetFriendshipById(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error getting friendship"+err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, res)
 }
 
-func (*FriendshipsController) GetFriendship(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
+func (*FriendshipsController) GetFriendships(c *gin.Context) {
+	user := c.Query("user")
+	isPending := c.Query("isPending")
+	res, err := services.FriendshipService.GetFriendships(user, isPending)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error getting friendship"+err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, res)
 }
 
 func (*FriendshipsController) UpdateFriendship(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
+	id := c.Query("id")
+	isPending := c.Query("isPending")
+	isPendingBool, err := strconv.ParseBool(isPending)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error parsing pending status"+err.Error())
+		return
+	}
+	err = services.FriendshipService.UpdateFriendshipPendingStatus(id, isPendingBool)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error updating friendship"+err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, id)
 }
