@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strconv"
 )
 
 type FriendshipServiceType struct{}
@@ -26,8 +27,8 @@ func (*FriendshipServiceType) CreateFriendship(friendship *models.FriendshipCrea
 	}
 	return nil
 }
-func (*FriendshipServiceType) DeleteFriendship(id string) error {
-	query := fmt.Sprintf("DELETE FROM %s WHERE ID = %s ", tableFriendships, id)
+func (*FriendshipServiceType) DeleteFriendship(id int) error {
+	query := fmt.Sprintf("DELETE FROM %s WHERE ID = %v ", tableFriendships, id)
 	log.Print(query)
 	_, err := DbService.Exec(query)
 	if err != nil {
@@ -69,12 +70,22 @@ func (*FriendshipServiceType) GetFriendshipById(id string) (*models.Friendship, 
 	return &friendship, nil
 }
 
-func (*FriendshipServiceType) GetFriendships(user string, isPending string) ([]models.Friendship, error) {
+func (*FriendshipServiceType) GetFriendships(user string, isPending string, forRequest string) ([]models.Friendship, error) {
 	var query string
 	var friendsList []models.Friendship
-	if user != "" && isPending != "" {
-		query = fmt.Sprintf("SELECT * FROM %s WHERE isPending = %v AND User1 = '%s' OR User2 = '%s' ", tableFriendships, isPending, user, user)
+	boolIsPending, err := strconv.ParseBool(isPending)
+	if err != nil {
+		log.Print(err)
+		return nil, err
 	}
+	if len(user) != 0 && len(isPending) != 0 {
+		query = fmt.Sprintf("SELECT ID,User1,User2,IsPending FROM %s WHERE isPending = %v AND (User1 = '%s' OR User2 = '%s') ", tableFriendships, boolIsPending, user, user)
+
+	}
+	if len(forRequest) != 0 && len(user) != 0 && len(isPending) != 0 {
+		query = fmt.Sprintf("SELECT ID,User1,User2,IsPending FROM %s WHERE isPending = %v AND User2 = '%s' ", tableFriendships, boolIsPending, user)
+	}
+	log.Print(query)
 	rows, err := DbService.Query(query)
 	if err == sql.ErrNoRows {
 		return nil, err

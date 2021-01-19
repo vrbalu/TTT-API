@@ -1,7 +1,7 @@
 package models
 
 type CreateGame struct {
-	Username string `json:"username,omitempty"`
+	User1 string `json:"user1,omitempty"`
 
-	Shape string `json:"shape,omitempty"`
+	User2 string `json:"user2,omitempty"`
 }

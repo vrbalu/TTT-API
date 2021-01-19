@@ -14,7 +14,7 @@ func SetupRouter() *gin.Engine {
 	// CORS setup
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,
-		AllowMethods:     []string{"GET", "POST", "OPTIONS", "PUT", "PATCH"},
+		AllowMethods:     []string{"GET", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Authorization", "content-type"},
 		AllowCredentials: false,
 		MaxAge:           72 * time.Hour,
@@ -35,8 +35,8 @@ func SetupRouter() *gin.Engine {
 
 		apiGroup.GET("/friendships", friendshipsController.GetFriendships)
 		apiGroup.POST("/friendships", friendshipsController.CreateFriendship)
-		apiGroup.PUT("/friendships", friendshipsController.UpdateFriendship)
-		apiGroup.DELETE("/friendships", friendshipsController.DeleteFriendship)
+		apiGroup.PUT("/friendships/:id", friendshipsController.UpdateFriendship)
+		apiGroup.DELETE("/friendships/:id", friendshipsController.DeleteFriendship)
 		apiGroup.GET("/friendships/:id", friendshipsController.GetFriendshipById)
 
 		apiGroup.GET("/ttt", tttController.Get)

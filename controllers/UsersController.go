@@ -126,22 +126,30 @@ func (*UsersController) UpdateUser(c *gin.Context) {
 
 	}
 	if operationType == "password" {
-		var password *models.UpdatePassword
-		err := c.BindJSON(&password)
+		var passwordUpdate *models.UpdatePassword
+		var authModel models.Auth
+		err := c.BindJSON(&passwordUpdate)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, "Error getting body")
 			return
 		}
-		password.Password, err = helpers.HashPassword(password.Password)
-		if err != nil {
-			c.AbortWithStatusJSON(500, "Internal server error.")
+		authModel.Email = email
+		authModel.Password = passwordUpdate.OldPassword
+		isOldPasswordCorrect := userService.AuthorizeUser(&authModel)
+		if isOldPasswordCorrect {
+			passwordUpdate.Password, err = helpers.HashPassword(passwordUpdate.Password)
+			if err != nil {
+				c.AbortWithStatusJSON(500, "Internal server error.")
+			}
+			err = userService.UpdatePassword(email, passwordUpdate.Password)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, "Error inserting into DB")
+				return
+			}
+			c.JSON(http.StatusOK, "")
+		} else {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, "Wrong old password.")
 		}
-		err = userService.UpdatePassword(email, password.Password)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, "Error inserting into DB")
-			return
-		}
-		c.JSON(http.StatusOK, "")
 
 	}
 }

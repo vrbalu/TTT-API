@@ -26,8 +26,13 @@ func (*FriendshipsController) CreateFriendship(c *gin.Context) {
 }
 
 func (*FriendshipsController) DeleteFriendship(c *gin.Context) {
-	id := c.Query("id")
-	err := services.FriendshipService.DeleteFriendship(id)
+	id := c.Param("id")
+	intId, err := strconv.Atoi(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error deleting friendship"+err.Error())
+		return
+	}
+	err = services.FriendshipService.DeleteFriendship(intId)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error deleting friendship"+err.Error())
 		return
@@ -48,7 +53,8 @@ func (*FriendshipsController) GetFriendshipById(c *gin.Context) {
 func (*FriendshipsController) GetFriendships(c *gin.Context) {
 	user := c.Query("user")
 	isPending := c.Query("isPending")
-	res, err := services.FriendshipService.GetFriendships(user, isPending)
+	forRequest := c.Query("forRequest")
+	res, err := services.FriendshipService.GetFriendships(user, isPending, forRequest)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error getting friendship"+err.Error())
 		return
@@ -57,7 +63,7 @@ func (*FriendshipsController) GetFriendships(c *gin.Context) {
 }
 
 func (*FriendshipsController) UpdateFriendship(c *gin.Context) {
-	id := c.Query("id")
+	id := c.Param("id")
 	isPending := c.Query("isPending")
 	isPendingBool, err := strconv.ParseBool(isPending)
 	if err != nil {

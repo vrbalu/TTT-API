@@ -3,7 +3,9 @@ package models
 type PlayedMove struct {
 	Username string `json:"username,omitempty"`
 
-	Shape string `json:"shape,omitempty"`
+	X string `json:"x"`
 
-	Coor []Coordinates `json:"coor,omitempty"`
+	Y string `json:"y"`
+
+	FKGameID string `json:"game_id"`
 }

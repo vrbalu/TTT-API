@@ -1,5 +1,6 @@
 package models
 
 type UpdatePassword struct {
-	Password string `json:"password"`
+	OldPassword string `json:"oldPassword"`
+	Password    string `json:"password"`
 }

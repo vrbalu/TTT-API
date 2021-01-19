@@ -8,7 +8,7 @@ import (
 type GamesController struct{}
 
 func (*GamesController) CreateGame(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
+
 }
 
 func (*GamesController) DeleteGame(c *gin.Context) {
