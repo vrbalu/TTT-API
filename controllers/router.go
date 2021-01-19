@@ -8,8 +8,13 @@ import (
 	"time"
 )
 
+var notificationHub = helpers.NewHub()
+var gameHub = helpers.NewHub()
+
 func SetupRouter() *gin.Engine {
 	router := gin.New()
+	go notificationHub.Run()
+	go gameHub.Run()
 	router.Use(ginlogrus.Logger(helpers.Log), gin.Recovery()) //Setup logging and panic recovery
 	// CORS setup
 	router.Use(cors.New(cors.Config{
@@ -27,6 +32,7 @@ func SetupRouter() *gin.Engine {
 		userController := UsersController{}
 		sessionsController := SessionsController{}
 		friendshipsController := FriendshipsController{}
+		gamesController := GamesController{}
 		apiGroup.GET("/users", userController.GetAllUsers)
 		apiGroup.POST("/users", userController.CreateUser)
 		apiGroup.PUT("/users", userController.UpdateUser)
@@ -38,6 +44,15 @@ func SetupRouter() *gin.Engine {
 		apiGroup.PUT("/friendships/:id", friendshipsController.UpdateFriendship)
 		apiGroup.DELETE("/friendships/:id", friendshipsController.DeleteFriendship)
 		apiGroup.GET("/friendships/:id", friendshipsController.GetFriendshipById)
+		apiGroup.GET("/notify", func(c *gin.Context) {
+			helpers.ServeWs(notificationHub, c.Writer, c.Request)
+		})
+		apiGroup.GET("/gaming", func(c *gin.Context) {
+			helpers.ServeWs(gameHub, c.Writer, c.Request)
+		})
+		apiGroup.POST("/games", gamesController.CreateGame)
+		apiGroup.PUT("/games", gamesController.UpdateGame)
+		apiGroup.POST("/games/:id", gamesController.PlayMove)
 
 		apiGroup.GET("/ttt", tttController.Get)
 		apiGroup.POST("/ttt", tttController.Post)
