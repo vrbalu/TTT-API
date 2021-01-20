@@ -63,7 +63,7 @@ func (*UserServiceType) CheckUserExists(email string) (id string, exists bool) {
 	return id, true
 }
 func (*UserServiceType) RegisterUserViaGoogle(user *models.User) error {
-	query := fmt.Sprintf("INSERT INTO %s (ExtID,Username,Email,IDToken,Online,CreatedAt) VALUES ('%s','%s','%s','%s',%v,DEFAULT) ", table, user.ExtID, user.Username, user.Email, user.IDToken, user.Online)
+	query := fmt.Sprintf("INSERT INTO %s (ExtID,Username,Email,InGame,Online,RegisteredViaGoogle,CreatedAt) VALUES ('%s','%s','%s','%s',%v,%v,DEFAULT) ", table, user.ExtID, user.Username, user.Email, user.InGame, user.Online, user.RegisteredViaGoogle)
 	log.Print(query)
 	_, err := DbService.Exec(query)
 	if err != nil {
@@ -73,7 +73,7 @@ func (*UserServiceType) RegisterUserViaGoogle(user *models.User) error {
 }
 
 func (*UserServiceType) RegisterUserViaWeb(user *models.User) error {
-	query := fmt.Sprintf("INSERT INTO %s (Username,Email,Password,Online,CreatedAt) VALUES ('%s','%s','%s',%v,DEFAULT) ", table, user.Username, user.Email, user.Password, user.Online)
+	query := fmt.Sprintf("INSERT INTO %s (Username,Email,Password,InGame,Online,RegisteredViaGoogle,CreatedAt) VALUES ('%s','%s','%s',%v,%v,%v,DEFAULT) ", table, user.Username, user.Email, user.Password, user.InGame, user.Online, user.RegisteredViaGoogle)
 	log.Print(query)
 	_, err := DbService.Exec(query)
 	if err != nil {
@@ -84,7 +84,7 @@ func (*UserServiceType) RegisterUserViaWeb(user *models.User) error {
 
 func (*UserServiceType) GetUserByEmail(email string) *models.User {
 	var user models.User
-	query := fmt.Sprintf("SELECT Username,Email,Online FROM %s WHERE Email = '%s'", table, email)
+	query := fmt.Sprintf("SELECT Username,Email,InGame,Online,RegisteredViaGoogle FROM %s WHERE Email = '%s'", table, email)
 	res, err := DbService.Query(query)
 	if err == sql.ErrNoRows {
 		return nil
@@ -94,15 +94,15 @@ func (*UserServiceType) GetUserByEmail(email string) *models.User {
 		return nil
 	}
 	res.Next()
-	err = res.Scan(&user.Username, &user.Email, &user.Online)
+	err = res.Scan(&user.Username, &user.Email, &user.InGame, &user.Online, &user.RegisteredViaGoogle)
 	if err != nil {
 		log.Print(err)
 		return nil
 	}
 	return &user
 }
-func (*UserServiceType) UpdateStatus(email string, updatedValue bool) error {
-	query := fmt.Sprintf("UPDATE %s SET Online = %v WHERE Email = '%s'", table, updatedValue, email)
+func (*UserServiceType) UpdateStatus(email string, statusField string, updatedValue bool) error {
+	query := fmt.Sprintf("UPDATE %s SET %s = %v WHERE Email = '%s'", table, statusField, updatedValue, email)
 	log.Print("Updating status")
 	_, err := DbService.Exec(query)
 	if err != nil {
@@ -123,9 +123,9 @@ func (*UserServiceType) GetAllUsers(onlyOnline bool) ([]models.SimpleUser, error
 	var activeUsers []models.SimpleUser
 	var query string
 	if onlyOnline {
-		query = fmt.Sprintf("SELECT Username,Email,IDToken,Online FROM %s WHERE Online = true", table)
+		query = fmt.Sprintf("SELECT Username,Email,InGame,Online,RegisteredViaGoogle FROM %s WHERE Online = true", table)
 	} else {
-		query = fmt.Sprintf("SELECT Username,Email,IDToken, Online FROM %s", table)
+		query = fmt.Sprintf("SELECT Username,Email,InGame,Online,RegisteredViaGoogle FROM %s", table)
 	}
 	rows, err := DbService.Query(query)
 	if err == sql.ErrNoRows {
@@ -138,7 +138,7 @@ func (*UserServiceType) GetAllUsers(onlyOnline bool) ([]models.SimpleUser, error
 	defer rows.Close()
 	for rows.Next() {
 		var user models.SimpleUser
-		err = rows.Scan(&user.Username, &user.Email, &user.IdToken, &user.Online)
+		err = rows.Scan(&user.Username, &user.Email, &user.InGame, &user.Online, &user.RegisteredViaGoogle)
 		if err != nil {
 			log.Println(err)
 			return nil, err

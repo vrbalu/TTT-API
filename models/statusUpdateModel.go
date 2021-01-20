@@ -1,5 +1,7 @@
 package models
 
 type StatusUpdate struct {
-	IsPending bool `json:"isPending,omitempty"`
+	Id         int  `json:"id,omitempty"`
+	IsPending  bool `json:"isPending,omitempty"`
+	IsFinished bool `json:"isFinished,omitempty"`
 }

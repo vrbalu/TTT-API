@@ -11,9 +11,11 @@ type User struct {
 
 	ExtID string `json:"extId,omitempty"`
 
-	IDToken string `json:"idToken,omitempty"`
+	InGame bool `json:"inGame,omitempty"`
 
 	Online bool `json:"online,omitempty"`
+
+	RegisteredViaGoogle bool `json:"registeredViaGoogle,omitempty"`
 
 	CreatedAt string `json:"createdAt,omitempty"`
 }

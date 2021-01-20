@@ -43,11 +43,12 @@ func (*UsersController) CreateUserWithGoogle(c *gin.Context) {
 	}
 	fmt.Printf("Body %s", gtrm.UserData.ID)
 	user := models.User{
-		Username: gtrm.UserData.Name + gtrm.UserData.ID[len(gtrm.UserData.ID)-5:],
-		Email:    gtrm.UserData.Email,
-		ExtID:    gtrm.UserData.ID,
-		IDToken:  gtrm.UserData.IDToken,
-		Online:   true,
+		Username:            gtrm.UserData.Name + gtrm.UserData.ID[len(gtrm.UserData.ID)-5:],
+		Email:               gtrm.UserData.Email,
+		ExtID:               gtrm.UserData.ID,
+		InGame:              false,
+		Online:              true,
+		RegisteredViaGoogle: true,
 	}
 	_, existsUser := userService.CheckUserExists(user.Email)
 	if !existsUser {
@@ -65,16 +66,17 @@ func (*UsersController) CreateUserWithGoogle(c *gin.Context) {
 	if !valid {
 		c.JSON(http.StatusUnauthorized,"Unauthorized. Token not valid.")
 	}*/
-	err = services.UserService.UpdateStatus(user.Email, true)
+	err = services.UserService.UpdateStatus(user.Email, "Online", true)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error updating")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"username": user.Username,
-		"email":    user.Email,
-		"idToken":  user.IDToken,
-		"online":   user.Online,
+		"username":            user.Username,
+		"email":               user.Email,
+		"inGame":              user.InGame,
+		"online":              user.Online,
+		"registeredViaGoogle": user.RegisteredViaGoogle,
 	})
 }
 func (*UsersController) DeleteUser(c *gin.Context) {
@@ -117,7 +119,7 @@ func (*UsersController) UpdateUser(c *gin.Context) {
 			return
 		}
 		log.Print(status.Online)
-		err = userService.UpdateStatus(email, status.Online)
+		err = userService.UpdateStatus(email, "Online", status.Online)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 			return

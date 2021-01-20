@@ -9,5 +9,6 @@ type Game struct {
 
 	IsPending bool `json:"isPending,omitempty"`
 
-	IsFinished bool `json:"isFinished,omitempty"`
+	IsFinished bool   `json:"isFinished,omitempty"`
+	Winner     string `json:"winner,omitempty"`
 }
