@@ -66,11 +66,16 @@ func (*UsersController) CreateUserWithGoogle(c *gin.Context) {
 	if !valid {
 		c.JSON(http.StatusUnauthorized,"Unauthorized. Token not valid.")
 	}*/
-	err = services.UserService.UpdateStatus(user.Email, "Online", true)
+	err = services.UserService.UpdateStatus(user.Email, false, true)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error updating")
 		return
 	}
+	statusHub.Broadcast <- []byte(fmt.Sprintf(`{
+		"username": "%s",
+		"online": %v,
+		"inGame": %v
+		}`, user.Username, user.Online, user.InGame))
 	c.JSON(http.StatusOK, gin.H{
 		"username":            user.Username,
 		"email":               user.Email,
@@ -118,14 +123,18 @@ func (*UsersController) UpdateUser(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, "Error getting body")
 			return
 		}
-		log.Print(status.Online)
-		err = userService.UpdateStatus(email, "Online", status.Online)
+		err = userService.UpdateStatus(status.Username, status.InGame, status.Online)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 			return
 		}
+		res := userService.GetUserByField("Username", status.Username)
+		statusHub.Broadcast <- []byte(fmt.Sprintf(`{
+		"username": "%s",
+		"online": %v,
+		"inGame": %v
+		}`, res.Username, res.Online, res.InGame))
 		c.JSON(http.StatusOK, "")
-
 	}
 	if operationType == "password" {
 		var passwordUpdate *models.UpdatePassword

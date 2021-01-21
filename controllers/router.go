@@ -10,11 +10,13 @@ import (
 
 var notificationHub = helpers.NewHub()
 var gameHub = helpers.NewHub()
+var statusHub = helpers.NewHub()
 
 func SetupRouter() *gin.Engine {
 	router := gin.New()
 	go notificationHub.Run()
 	go gameHub.Run()
+	go statusHub.Run()
 	router.Use(ginlogrus.Logger(helpers.Log), gin.Recovery()) //Setup logging and panic recovery
 	// CORS setup
 	router.Use(cors.New(cors.Config{
@@ -49,6 +51,9 @@ func SetupRouter() *gin.Engine {
 		})
 		apiGroup.GET("/gaming", func(c *gin.Context) {
 			helpers.ServeWs(gameHub, c.Writer, c.Request)
+		})
+		apiGroup.GET("/status", func(c *gin.Context) {
+			helpers.ServeWs(statusHub, c.Writer, c.Request)
 		})
 		apiGroup.POST("/games", gamesController.CreateGame)
 		apiGroup.PUT("/games", gamesController.UpdateGame)

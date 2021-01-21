@@ -48,5 +48,17 @@ func (*GamesController) PlayMove(c *gin.Context) {
 }
 
 func (*GamesController) UpdateGame(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
+	var updateGame models.GameUpdate
+	err := c.BindJSON(&updateGame)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error parsing body")
+		return
+	}
+	err = services.GameService.UpdateGame(updateGame.Id, updateGame.Winner, updateGame.IsPending, updateGame.IsFinished)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error parsing body")
+		return
+	}
+	c.JSON(http.StatusOK, "")
+
 }
