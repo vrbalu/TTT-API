@@ -14,6 +14,7 @@ var statusHub = helpers.NewHub()
 
 func SetupRouter() *gin.Engine {
 	router := gin.New()
+	// Go routines for websockets
 	go notificationHub.Run()
 	go gameHub.Run()
 	go statusHub.Run()
@@ -30,22 +31,28 @@ func SetupRouter() *gin.Engine {
 	// API routes
 	apiGroup := router.Group("/api")
 	{
-		tttController := TttController{}
 		userController := UsersController{}
 		sessionsController := SessionsController{}
 		friendshipsController := FriendshipsController{}
 		gamesController := GamesController{}
+		// Users endpoints
 		apiGroup.GET("/users", userController.GetAllUsers)
 		apiGroup.POST("/users", userController.CreateUser)
 		apiGroup.PUT("/users", userController.UpdateUser)
-
+		// Login endpoints
 		apiGroup.POST("/sessions", sessionsController.CreateSession)
-
+		apiGroup.POST("/callback", userController.CreateUserWithGoogle)
+		//Friendships endpoints
 		apiGroup.GET("/friendships", friendshipsController.GetFriendships)
 		apiGroup.POST("/friendships", friendshipsController.CreateFriendship)
 		apiGroup.PUT("/friendships/:id", friendshipsController.UpdateFriendship)
 		apiGroup.DELETE("/friendships/:id", friendshipsController.DeleteFriendship)
 		apiGroup.GET("/friendships/:id", friendshipsController.GetFriendshipById)
+		// Games endpoints
+		apiGroup.POST("/games", gamesController.CreateGame)
+		apiGroup.GET("/games/stats", gamesController.GetGamesStats)
+		apiGroup.PUT("/games", gamesController.UpdateGame)
+		// Websockets
 		apiGroup.GET("/notify", func(c *gin.Context) {
 			helpers.ServeWs(notificationHub, c.Writer, c.Request)
 		})
@@ -55,14 +62,6 @@ func SetupRouter() *gin.Engine {
 		apiGroup.GET("/status", func(c *gin.Context) {
 			helpers.ServeWs(statusHub, c.Writer, c.Request)
 		})
-		apiGroup.POST("/games", gamesController.CreateGame)
-		apiGroup.PUT("/games", gamesController.UpdateGame)
-		apiGroup.POST("/games/:id", gamesController.PlayMove)
-
-		apiGroup.GET("/ttt", tttController.Get)
-		apiGroup.POST("/ttt", tttController.Post)
-		apiGroup.POST("/callback", userController.CreateUserWithGoogle)
-
 	}
 	return router
 }

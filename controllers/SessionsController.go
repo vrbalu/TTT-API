@@ -5,7 +5,6 @@ import (
 	"TTT/mod/services"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 )
 
@@ -18,10 +17,10 @@ func (*SessionsController) CreateSession(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error getting body")
 		return
 	}
-	log.Print(auth)
 	authorized := services.UserService.AuthorizeUser(auth)
 	if !authorized {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, "Wrong e-mail or password")
+		return
 	}
 	user := services.UserService.GetUserByField("Email", auth.Email)
 	err = services.UserService.UpdateStatus(user.Username, false, true)
@@ -39,9 +38,4 @@ func (*SessionsController) CreateSession(c *gin.Context) {
 		"email":    &user.Email,
 		"online":   &user.Online,
 	})
-}
-
-func (*SessionsController) DeleteSession(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
-
 }

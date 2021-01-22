@@ -3,7 +3,6 @@ module TTT/mod
 go 1.15
 
 require (
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-sql-driver/mysql v1.5.0
@@ -16,5 +15,4 @@ require (
 	golang.org/x/sys v0.0.0-20200803210538-64077c9b5642 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
-	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 )

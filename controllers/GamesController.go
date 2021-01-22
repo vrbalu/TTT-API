@@ -31,20 +31,14 @@ func (*GamesController) CreateGame(c *gin.Context) {
 	c.JSON(http.StatusCreated, "")
 }
 
-func (*GamesController) GetAllGames(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
-}
-
-func (*GamesController) GetGamePlayers(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
-}
-
-func (*GamesController) GetOneGame(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
-}
-
-func (*GamesController) PlayMove(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
+func (*GamesController) GetGamesStats(c *gin.Context) {
+	var gameStats []models.GameStatsModel
+	gameStats, err := services.GameService.GetGameStats()
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error creating friendship"+err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, gameStats)
 }
 
 func (*GamesController) UpdateGame(c *gin.Context) {

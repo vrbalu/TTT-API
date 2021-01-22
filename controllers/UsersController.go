@@ -6,7 +6,6 @@ import (
 	"TTT/mod/services"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 )
 
@@ -14,23 +13,22 @@ type UsersController struct{}
 
 var userService services.UserServiceType
 
-func (*UsersController) CreateChat(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
-}
-
 func (*UsersController) CreateUser(c *gin.Context) {
 	var user *models.User
 	err := c.BindJSON(&user)
 	if err != nil {
 		c.AbortWithStatusJSON(500, "Failed binding.")
+		return
 	}
 	user.Password, err = helpers.HashPassword(user.Password)
 	if err != nil {
 		c.AbortWithStatusJSON(500, "Internal server error.")
+		return
 	}
 	err = userService.RegisterUserViaWeb(user)
 	if err != nil {
 		c.AbortWithStatusJSON(500, "Failed upload to DB.")
+		return
 	}
 	c.JSON(http.StatusOK, "")
 }
@@ -58,14 +56,6 @@ func (*UsersController) CreateUserWithGoogle(c *gin.Context) {
 			return
 		}
 	}
-	/*valid, err := validateToken(gtrm.UserData.IDToken)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, fmt.Sprintf("Error validating token: %s", err))
-		return
-	}
-	if !valid {
-		c.JSON(http.StatusUnauthorized,"Unauthorized. Token not valid.")
-	}*/
 	err = services.UserService.UpdateStatus(user.Email, false, true)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error updating")
@@ -83,9 +73,6 @@ func (*UsersController) CreateUserWithGoogle(c *gin.Context) {
 		"online":              user.Online,
 		"registeredViaGoogle": user.RegisteredViaGoogle,
 	})
-}
-func (*UsersController) DeleteUser(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
 }
 
 func (*UsersController) GetAllUsers(c *gin.Context) {
@@ -107,15 +94,9 @@ func (*UsersController) GetAllUsers(c *gin.Context) {
 	}
 }
 
-func (*UsersController) GetUserByName(c *gin.Context) {
-	c.JSON(http.StatusOK, "Hello world result")
-}
-
 func (*UsersController) UpdateUser(c *gin.Context) {
 	email := c.Query("email")
 	operationType := c.Query("type")
-	log.Print(email)
-	log.Print(operationType)
 	if operationType == "status" {
 		var status *models.UpdateStatus
 		err := c.BindJSON(&status)
@@ -151,6 +132,7 @@ func (*UsersController) UpdateUser(c *gin.Context) {
 			passwordUpdate.Password, err = helpers.HashPassword(passwordUpdate.Password)
 			if err != nil {
 				c.AbortWithStatusJSON(500, "Internal server error.")
+				return
 			}
 			err = userService.UpdatePassword(email, passwordUpdate.Password)
 			if err != nil {
@@ -160,7 +142,7 @@ func (*UsersController) UpdateUser(c *gin.Context) {
 			c.JSON(http.StatusOK, "")
 		} else {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, "Wrong old password.")
+			return
 		}
-
 	}
 }
