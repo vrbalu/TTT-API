@@ -14,7 +14,7 @@ func (*FriendshipsController) CreateFriendship(c *gin.Context) {
 	var newFriendship models.FriendshipCreate
 	err := c.BindJSON(&newFriendship)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error parsing body")
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Error parsing body")
 		return
 	}
 	err = services.FriendshipService.CreateFriendship(&newFriendship)
@@ -29,7 +29,7 @@ func (*FriendshipsController) DeleteFriendship(c *gin.Context) {
 	id := c.Param("id")
 	intId, err := strconv.Atoi(id)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error deleting friendship"+err.Error())
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Error deleting friendship"+err.Error())
 		return
 	}
 	err = services.FriendshipService.DeleteFriendship(intId)
@@ -67,7 +67,7 @@ func (*FriendshipsController) UpdateFriendship(c *gin.Context) {
 	isPending := c.Query("isPending")
 	isPendingBool, err := strconv.ParseBool(isPending)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error parsing pending status"+err.Error())
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Error parsing pending status"+err.Error())
 		return
 	}
 	err = services.FriendshipService.UpdateFriendshipPendingStatus(id, isPendingBool)

@@ -17,17 +17,17 @@ func (*UsersController) CreateUser(c *gin.Context) {
 	var user *models.User
 	err := c.BindJSON(&user)
 	if err != nil {
-		c.AbortWithStatusJSON(500, "Failed binding.")
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Failed binding.")
 		return
 	}
 	user.Password, err = helpers.HashPassword(user.Password)
 	if err != nil {
-		c.AbortWithStatusJSON(500, "Internal server error.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, "Internal server error.")
 		return
 	}
 	err = userService.RegisterUserViaWeb(user)
 	if err != nil {
-		c.AbortWithStatusJSON(500, "Failed upload to DB.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, "Failed upload to DB.")
 		return
 	}
 	c.JSON(http.StatusOK, "")
@@ -36,7 +36,7 @@ func (*UsersController) CreateUserWithGoogle(c *gin.Context) {
 	var gtrm models.GoogleTokenResponseModel
 	err := c.BindJSON(&gtrm)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error getting body")
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Error getting body")
 		return
 	}
 	fmt.Printf("Body %s", gtrm.UserData.ID)
@@ -101,7 +101,7 @@ func (*UsersController) UpdateUser(c *gin.Context) {
 		var status *models.UpdateStatus
 		err := c.BindJSON(&status)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, "Error getting body")
+			c.AbortWithStatusJSON(http.StatusBadRequest, "Error getting body")
 			return
 		}
 		err = userService.UpdateStatus(status.Username, status.InGame, status.Online)
@@ -122,7 +122,7 @@ func (*UsersController) UpdateUser(c *gin.Context) {
 		var authModel models.Auth
 		err := c.BindJSON(&passwordUpdate)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, "Error getting body")
+			c.AbortWithStatusJSON(http.StatusBadRequest, "Error getting body")
 			return
 		}
 		authModel.Email = email

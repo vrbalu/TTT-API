@@ -14,7 +14,7 @@ func (*GamesController) CreateGame(c *gin.Context) {
 	var newGame models.CreateGame
 	err := c.BindJSON(&newGame)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error parsing body")
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Error parsing body")
 		return
 	}
 	id, err := services.GameService.CreateGame(&newGame)
@@ -45,7 +45,7 @@ func (*GamesController) UpdateGame(c *gin.Context) {
 	var updateGame models.GameUpdate
 	err := c.BindJSON(&updateGame)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error parsing body")
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Error parsing body")
 		return
 	}
 	err = services.GameService.UpdateGame(updateGame.Id, updateGame.Winner, updateGame.IsPending, updateGame.IsFinished)

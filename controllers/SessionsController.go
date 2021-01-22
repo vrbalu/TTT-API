@@ -14,7 +14,7 @@ func (*SessionsController) CreateSession(c *gin.Context) {
 	var auth *models.Auth
 	err := c.BindJSON(&auth)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, "Error getting body")
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Error getting body")
 		return
 	}
 	authorized := services.UserService.AuthorizeUser(auth)
@@ -33,7 +33,7 @@ func (*SessionsController) CreateSession(c *gin.Context) {
 		"online": %v,
 		"inGame": %v
 		}`, user.Username, user.Online, user.InGame))
-	c.JSON(200, gin.H{
+	c.JSON(201, gin.H{
 		"username": &user.Username,
 		"email":    &user.Email,
 		"online":   &user.Online,
